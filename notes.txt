@@ -1,0 +1,6 @@
+expression 	-> 	term ;
+term 		-> 	factor ( ( "-" | "+" ) factor )*;
+factor 		-> 	base ( ( "/" | "*" ) base )* ;
+base		->  unary ( "^" unary )*;
+unary 		-> 	"-" unary | primary ;
+primary 	-> 	NUMBER | "(" expression ")" ;
