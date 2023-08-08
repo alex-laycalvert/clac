@@ -2,6 +2,12 @@
 name = "clac"
 version = "1.0.0"
 edition = "2021"
+authors = ["Alex Lay-Calvert"]
+description = "Simple command-line calculator"
+license = "MIT"
+homepage = "https://github.com/alex-laycalvert/clac"
+repository = "https://github.com/alex-laycalvert/clac"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
