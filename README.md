@@ -40,3 +40,26 @@ cargo build --release
 # Binary available
 ./target/release/clac
 ```
+
+## Usage
+
+Start `clac` by running `clac` from a terminal. Once inside the prompt, you can evaluate normal mathematical expressions:
+
+```bash
+$ clac
+
+> 1 + 2 + 3
+= 6
+4 * 6 - 7
+= 17
+```
+
+The following operators are available:
+
+- Addition `+`
+- Subtraction `-`
+- Multiplication `*`
+- Division `/`
+- Exponentiation `^`
+
+You can also use `ans` in any expression to use the last evaluated result. Defaults to `0` on the first run and any failing expressions.
