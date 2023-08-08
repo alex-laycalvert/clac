@@ -6,6 +6,11 @@ use std::io::{self, Write};
 use token::Token;
 
 fn main() {
+    prompt();
+}
+
+fn prompt() {
+    let mut ans = None;
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -14,15 +19,18 @@ fn main() {
         if bytes_read == 0 {
             break;
         }
-        match execute(line) {
-            Ok(result) => println!("= {result}"),
+        match execute(line, ans) {
+            Ok(result) => {
+                ans = Some(result);
+                println!("= {result}");
+            }
             Err(err) => eprintln!("{err}"),
         }
     }
 }
 
-fn execute(line: String) -> Result<f32, String> {
-    let tokens = Token::tokenize(line)?;
-    let expression = Expr::from(tokens)?;
+fn execute(source: String, ans: Option<f32>) -> Result<f32, String> {
+    let tokens = Token::tokenize(source)?;
+    let expression = Expr::from(tokens, ans)?;
     expression.evaluate()
 }

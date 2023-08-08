@@ -44,63 +44,71 @@ impl Expr {
         }
     }
 
-    pub fn from(tokens: Vec<Token>) -> Result<Self, String> {
+    pub fn from(tokens: Vec<Token>, ans: Option<f32>) -> Result<Self, String> {
         let mut tokens = LinkedList::from_iter(tokens.iter());
         let mut cursor = tokens.cursor();
-        Self::expression(&mut cursor)
+        Self::expression(&mut cursor, ans)
     }
 
-    fn expression(tokens: &mut Cursor<'_, &Token>) -> Result<Expr, String> {
-        Self::term(tokens)
+    fn expression(tokens: &mut Cursor<'_, &Token>, ans: Option<f32>) -> Result<Expr, String> {
+        Self::term(tokens, ans)
     }
 
-    fn term(tokens: &mut Cursor<'_, &Token>) -> Result<Expr, String> {
-        let mut expr = Self::factor(tokens)?;
+    fn term(tokens: &mut Cursor<'_, &Token>, ans: Option<f32>) -> Result<Expr, String> {
+        let mut expr = Self::factor(tokens, ans)?;
         while Self::match_tokens(tokens, &[Token::Subtract, Token::Add]) {
-            let op = **tokens.peek_prev().unwrap();
-            let right = Self::factor(tokens)?;
+            let op = tokens.peek_prev().unwrap().clone();
+            let right = Self::factor(tokens, ans)?;
             expr = Expr::Binary(Box::new(expr), op, Box::new(right));
         }
         Ok(expr)
     }
 
-    fn factor(tokens: &mut Cursor<'_, &Token>) -> Result<Expr, String> {
-        let mut expr = Self::base(tokens)?;
+    fn factor(tokens: &mut Cursor<'_, &Token>, ans: Option<f32>) -> Result<Expr, String> {
+        let mut expr = Self::base(tokens, ans)?;
         while Self::match_tokens(tokens, &[Token::Divide, Token::Multiply]) {
-            let op = **tokens.peek_prev().unwrap();
-            let right = Self::base(tokens)?;
+            let op = tokens.peek_prev().unwrap().clone();
+            let right = Self::base(tokens, ans)?;
             expr = Expr::Binary(Box::new(expr), op, Box::new(right));
         }
         Ok(expr)
     }
 
-    fn base(tokens: &mut Cursor<'_, &Token>) -> Result<Expr, String> {
-        let mut expr = Self::unary(tokens)?;
+    fn base(tokens: &mut Cursor<'_, &Token>, ans: Option<f32>) -> Result<Expr, String> {
+        let mut expr = Self::unary(tokens, ans)?;
         while Self::match_tokens(tokens, &[Token::Exponent]) {
-            let op = **tokens.peek_prev().unwrap();
-            let right = Self::unary(tokens)?;
+            let op = tokens.peek_prev().unwrap().clone();
+            let right = Self::unary(tokens, ans)?;
             expr = Expr::Binary(Box::new(expr), op, Box::new(right));
         }
         Ok(expr)
     }
 
-    fn unary(tokens: &mut Cursor<'_, &Token>) -> Result<Expr, String> {
+    fn unary(tokens: &mut Cursor<'_, &Token>, ans: Option<f32>) -> Result<Expr, String> {
         if Self::match_tokens(tokens, &[Token::Subtract]) {
-            let op = **tokens.peek_prev().unwrap();
-            let right = Self::unary(tokens)?;
+            let op = tokens.peek_prev().unwrap().clone();
+            let right = Self::unary(tokens, ans)?;
             return Ok(Expr::Unary(op, Box::new(right)));
         }
-        Self::primary(tokens)
+        Self::primary(tokens, ans)
     }
 
-    fn primary(tokens: &mut Cursor<'_, &Token>) -> Result<Expr, String> {
+    fn primary(tokens: &mut Cursor<'_, &Token>, ans: Option<f32>) -> Result<Expr, String> {
+        if Self::match_tokens(tokens, &[Token::Identifier(String::new())]) {
+            if let Token::Identifier(iden) = tokens.peek_prev().unwrap() {
+                if iden == "ans" {
+                    return Ok(Expr::Literal(ans.unwrap_or_default()));
+                }
+                return Err(format!("Unknown identifier \"{iden}\""));
+            }
+        }
         if Self::match_tokens(tokens, &[Token::Number(0.0)]) {
-            if let Token::Number(val) = **tokens.peek_prev().unwrap() {
-                return Ok(Expr::Literal(val));
+            if let Token::Number(val) = tokens.peek_prev().unwrap() {
+                return Ok(Expr::Literal(*val));
             }
         }
         if Self::match_tokens(tokens, &[Token::LeftParen]) {
-            let expr = Self::expression(tokens)?;
+            let expr = Self::expression(tokens, ans)?;
             Self::consume(
                 tokens,
                 Token::RightParen,
@@ -117,14 +125,14 @@ impl Expr {
         message: String,
     ) -> Result<Token, String> {
         if Self::check(tokens, token_type) {
-            return Ok(**tokens.next().unwrap());
+            return Ok(tokens.next().unwrap().clone());
         }
         Err(message)
     }
 
     fn match_tokens(tokens: &mut Cursor<'_, &Token>, token_types: &[Token]) -> bool {
         for token_type in token_types {
-            if Self::check(tokens, *token_type) {
+            if Self::check(tokens, token_type.clone()) {
                 tokens.next();
                 return true;
             }
@@ -144,6 +152,7 @@ impl Expr {
                     | (Token::LeftParen, Token::LeftParen)
                     | (Token::RightParen, Token::RightParen)
                     | (Token::Number(_), Token::Number(_))
+                    | (Token::Identifier(_), Token::Identifier(_))
             );
         }
         false
