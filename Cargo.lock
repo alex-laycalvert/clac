@@ -4,10 +4,9 @@ version = 3
 
 [[package]]
 name = "clac"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "linked-list",
- "prev-iter",
 ]
 
 [[package]]
@@ -15,9 +14,3 @@ name = "linked-list"
 version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4dacf969043dc69f1f731b5042eb05e030d264bcf34f2242889fcbdc7a65f06"
-
-[[package]]
-name = "prev-iter"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ceacb352f798299b2044f4b9a894e8ef5d21115ccd293a323d44fc665132ec83"
